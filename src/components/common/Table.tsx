@@ -1,12 +1,11 @@
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { ResponseModuleTypes } from "../../interface/moduleInterface";
 interface propsType {
   columns: GridColDef[];
-  rows: ResponseModuleTypes[];
+  rows: any;
 }
 const Table = (props: propsType) => {
   return (
-    <div style={{ height: 650, width: "100%" }}>
+    <div style={{ width: "100%" }}>
       <DataGrid
         sx={{
           display: "flex",

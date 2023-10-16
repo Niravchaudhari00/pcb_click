@@ -1,5 +1,5 @@
 const UserManagement = () => {
-  return <div>User Management Page</div>;
+  return <div className="text-blue-600">User Management Page</div>;
 };
 
 export default UserManagement;

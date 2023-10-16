@@ -3,4 +3,5 @@
 export const EndPoint = {
   LOGIN: `/admin/auth/login`,
   MODULE: `/admin/module`,
+  ROLE: `/admin/role`,
 };

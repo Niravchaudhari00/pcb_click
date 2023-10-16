@@ -1,6 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import SingIn from "./page/SingIn";
-
+import "../src/App.css";
 import ProtectedRoute from "./components/core/auth/ProtectedRoute";
 import Dashboard from "./components/core/dashboard/Dashboard";
 import Home from "./page/Home";
