@@ -16,33 +16,54 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 // import { useDispatch } from "react-redux";
 
-import { addModuleName, getModuleData } from "../../../redux/slice/ModuleSlice";
+import {
+  addModuleName,
+  deleteModuleName,
+  getModuleData,
+  updateModuleName,
+} from "../../../redux/slice/ModuleSlice";
 import { rootState, useAppDispatch } from "../../../redux/store";
-import { GridColDef, GridDeleteIcon } from "@mui/x-data-grid";
+import {
+  GridColDef,
+  GridDeleteIcon,
+  GridRenderCellParams,
+} from "@mui/x-data-grid";
 import ModeEditOutlineIcon from "@mui/icons-material/ModeEditOutline";
 import Table from "../../common/Table";
 import { blue, red } from "@mui/material/colors";
 import { useSelector } from "react-redux";
 import { ResponseModuleTypes } from "../../../interface/moduleInterface";
+import ConfirmModal, { ConfirmModalType } from "../../common/ConfirmModal";
+import SearchKeyword from "../../common/SearchKeyword";
 
 //Define Interface
 export interface ModuleNameType {
+  id?: number;
   name: string;
 }
-
 // Yup Schema
 const schema = yup.object({
   name: yup.string().required(),
 });
 
 const Module = () => {
-  // Initial Hooks
+  // Initial State Hooks
   const [expanded, setExpanded] = useState<boolean>(false);
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [moduleName, setModuleName] = useState<ModuleNameType | null>(null);
   const [moduleDataRows, setModuleDataRows] = useState<ResponseModuleTypes[]>(
     []
   );
+  const [updateValue, setUpdateValue] = useState<ModuleNameType | null>(null);
+  const [updateValueData, setUpdateValueData] = useState<ModuleNameType | null>(
+    null
+  );
+
+  const [deleteModuleId, setDeleteModuleId] = useState<number | null>(null);
+  const [confirmModal, setConfirmModal] = useState<ConfirmModalType | null>(
+    null
+  );
+  const [count, setCount] = useState(0);
 
   const dispatch = useAppDispatch();
 
@@ -60,7 +81,7 @@ const Module = () => {
     (state: rootState) => state.module.data
   );
 
-  // Set data in setModuleData
+  // Set data in setModuleDataRows
   useEffect(() => {
     if (moduleData.length > 0) {
       setModuleDataRows(moduleData);
@@ -72,47 +93,101 @@ const Module = () => {
     dispatch(getModuleData());
   }, []);
 
-  // Add Module Name Effect
+  // Add And Update Module Name
   useEffect(() => {
-    if (moduleName !== null) {
+    if (moduleName !== null && !isEdit) {
       dispatch(addModuleName(moduleName));
+    } else if (isEdit) {
+      dispatch(updateModuleName(updateValueData));
     }
-  }, [moduleName]);
+  }, [moduleName, updateValueData]);
 
+  // Delete Module Name
+  useEffect(() => {
+    if (deleteModuleId !== null) {
+      dispatch(deleteModuleName(deleteModuleId));
+    }
+  }, [deleteModuleId]);
   // Toggle Btn
   const HandleAddAndCancel = () => {
+    setIsEdit(false);
     setExpanded((prev) => !prev);
+    reset();
   };
 
   // Submit Handler
   const onSubmit: SubmitHandler<ModuleNameType> = (data) => {
+    // Update Module Name
     if (isEdit) {
-      // Update Module Name
+      const currentValue = getValues();
+      const updateData = {
+        id: updateValue?.id,
+        name: currentValue.name,
+      };
+      setUpdateValueData(updateData);
+      reset();
+    } else {
+      // Add Module Name
+      const addModuleName = {
+        name: data.name,
+      };
+      setModuleName(addModuleName);
+      reset();
     }
-    // Add Module Name
-    const addModule = {
-      name: data.name,
-    };
-    setModuleName(addModule);
-    reset();
   };
 
   // Cancel Handler
   const handleCancel = () => {
     setExpanded(false);
+    setIsEdit(false);
     reset();
   };
 
   // ++++++++++++++++++++ Operations +++++++++++++++++++++++//
 
-  const handleUpdate = (props: any) => {
-    console.log(props);
+  // Edit Mode
+  useEffect(() => {
+    if (isEdit) {
+      if (updateValue !== null) {
+        setValue("name", updateValue.name);
+      }
+    }
+  }, [isEdit, updateValue]);
+
+  const handleUpdate = (props: GridRenderCellParams) => {
+    // set value in update state
+    setUpdateValue({
+      id: props.row.id,
+      name: props.row.name,
+    });
+
+    setExpanded(true);
+    setIsEdit(true);
   };
 
-  const handleDelete = (props: any) => {
-    console.log(props);
+  const handleDelete = (props: GridRenderCellParams) => {
+    setConfirmModal({
+      title: "Confirm action",
+      description: "Are you sure you want to confirm this action?",
+      btnCancelTxt: "Cancel",
+      btnConfirmTxt: "Confirm",
+      cancelHandler: () => {
+        setConfirmModal(null);
+      },
+      confirmHandler: () => {
+        setDeleteModuleId(props.row.id);
+        setConfirmModal(null);
+      },
+    });
   };
+
+  useEffect(() => {
+    setCount((prevCount) => prevCount + 1);
+  }, []);
+
+  console.log(count);
   // Gride Table columns
+
   const columns: GridColDef[] = [
     {
       field: "id",
@@ -154,93 +229,97 @@ const Module = () => {
   ];
 
   return (
-    <Container>
-      <Box
-        sx={{
-          marginBottom: 3,
-          display: "flex",
-          justifyContent: "space-between",
-          placeItems: "center",
-          height: 100,
-        }}
-      >
-        <Typography
-          fontWeight="bold"
-          variant="h5"
-          sx={{ textTransform: "capitalize" }}
-        >
-          {location.pathname.split("/").join("")}
-        </Typography>
+    <div>
+      <Container>
         <Box
           sx={{
+            marginBottom: 3,
             display: "flex",
-            justifyContent: "center",
+            justifyContent: "space-between",
             placeItems: "center",
-            gap: 3,
+            height: 100,
           }}
         >
-          {/* <SearchKeyword /> */}
-          {/* Add Button when you click open form and double click this button on/off  */}
-          <Button onClick={HandleAddAndCancel} variant="contained">
-            Add
-          </Button>
-        </Box>
-      </Box>
-      <Box sx={{ marginBottom: 2 }}>
-        <Accordion expanded={expanded}>
-          <AccordionSummary
-            style={{ cursor: "default" }}
-            aria-controls="panel-content"
-            id="panel-header"
+          <Typography
+            fontWeight="bold"
+            variant="h5"
+            sx={{ textTransform: "capitalize" }}
           >
-            <Typography>Module Details</Typography>
-          </AccordionSummary>
-
-          <AccordionDetails>
-            <Box
-              component="form"
-              onSubmit={handleSubmit(onSubmit)}
-              sx={{
-                display: "flex",
-                gap: 2,
-              }}
+            {location.pathname.split("/").join("")}
+          </Typography>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              placeItems: "center",
+              gap: 3,
+            }}
+          >
+            <SearchKeyword moduleData={moduleDataRows} />
+            {/* Add Button when you click open form  */}
+            <Button onClick={HandleAddAndCancel} variant="contained">
+              Add
+            </Button>
+          </Box>
+        </Box>
+        <Box sx={{ marginBottom: 2 }}>
+          <Accordion expanded={expanded}>
+            <AccordionSummary
+              style={{ cursor: "default" }}
+              aria-controls="panel-content"
+              id="panel-header"
             >
-              <Box>
-                <Controller
-                  name="name"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      defaultChecked
-                      value={field.value || ""}
-                      error={!!errors.name}
-                      label="Module Name"
-                      id="outlined-basic"
-                      placeholder="Enter Module Name"
-                      variant="outlined"
-                      size="small"
-                    />
-                  )}
-                />
-                <NotifyError error={errors?.name?.message} />
+              <Typography>Module Details</Typography>
+            </AccordionSummary>
+
+            <AccordionDetails>
+              <Box
+                component="form"
+                onSubmit={handleSubmit(onSubmit)}
+                sx={{
+                  display: "flex",
+                  gap: 2,
+                }}
+              >
+                <Box>
+                  <Controller
+                    name="name"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        defaultChecked
+                        value={field.value || ""}
+                        error={!!errors.name}
+                        label="Module Name"
+                        id="outlined-basic"
+                        placeholder="Enter Module Name"
+                        variant="outlined"
+                        size="small"
+                      />
+                    )}
+                  />
+                  <NotifyError error={errors?.name?.message} />
+                </Box>
+                <Box sx={{ display: "flex", gap: 2, height: 40 }}>
+                  {/* cancel Button when you click form reset and close accordion */}
+                  <Button onClick={handleCancel} variant="outlined">
+                    cancel
+                  </Button>
+                  {/* Submit  */}
+                  <Button type="submit" variant="contained">
+                    {isEdit ? "Update" : "Add"}
+                  </Button>
+                </Box>
               </Box>
-              <Box sx={{ display: "flex", gap: 2, height: 40 }}>
-                {/* cancel Button when you click form reset and close accordion */}
-                <Button onClick={handleCancel} variant="outlined">
-                  cancel
-                </Button>
-                {/* Submit  */}
-                <Button type="submit" variant="contained">
-                  {isEdit ? "Update" : "Add"}
-                </Button>
-              </Box>
-            </Box>
-          </AccordionDetails>
-        </Accordion>
-      </Box>
-      <Table columns={columns} rows={moduleDataRows} />
-    </Container>
+            </AccordionDetails>
+          </Accordion>
+        </Box>
+        <Table columns={columns} rows={moduleDataRows} />
+      </Container>
+
+      {confirmModal && <ConfirmModal modalData={confirmModal} />}
+    </div>
   );
 };
 

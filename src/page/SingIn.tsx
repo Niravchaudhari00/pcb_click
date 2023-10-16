@@ -20,15 +20,14 @@ import { useForm, SubmitHandler, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import NotifyError from "../components/common/NotifyError";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { useDispatch } from "react-redux";
-import axiosInstance from "../services/AxiosInstance";
-import { Auth } from "../services/API";
-import { setProgress, setToken } from "../redux/slice/AuthSlice";
-import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import { rootState, useAppDispatch } from "../redux/store";
+import { getAuth } from "../redux/slice/AuthSlice";
+import useToken from "../utils/features/setTokenInCookie";
 
-interface SingIn {
+interface UserInformation {
   email_address: string;
   password: string;
 }
@@ -50,52 +49,32 @@ const SingIn = () => {
     formState: { errors },
     control,
     reset,
-  } = useForm<SingIn>({ resolver: yupResolver(schema) });
+  } = useForm<UserInformation>({ resolver: yupResolver(schema) });
 
   // hooks
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const [userInfo, setUserInfo] = useState<UserInformation | null>(null);
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [errorMsg, setErrorMsg] = useState<ErrorResponseType | null>(null);
+  const { loading } = useSelector((state: rootState) => state.auth);
 
   // show password handler
   const handleClickShowPassword = () => setShowPassword((prev) => !prev);
 
+  useEffect(() => {
+    if (userInfo !== null) {
+      dispatch(getAuth(userInfo));
+      navigate("/dashboard");
+    }
+  }, [userInfo]);
   // Login Handler
-  const onSubmit: SubmitHandler<SingIn> = async (data) => {
-    const logindata = {
+  const onSubmit: SubmitHandler<UserInformation> = async (data) => {
+    const loginData = {
       email_address: data.email_address,
       password: data.password,
     };
-
-    // login API call
-    setLoading(true);
-    dispatch(setProgress(0));
-    try {
-      const response = await axiosInstance.post(Auth.LOGIN, logindata);
-
-      if (!response.data.success) throw new Error(response.data.message);
-
-      // set value in localstorage
-      localStorage.setItem("token", response.data?.data?.token);
-      dispatch(setToken(response.data?.data?.token));
-
-      // after that navigate dashboard
-      navigate("/dashboard");
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        const errResponse: ErrorResponseType = error.response?.data;
-        setErrorMsg(errResponse);
-      }
-    }
-    dispatch(setProgress(100));
-    setLoading(false);
-
-    reset({
-      email_address: "",
-      password: "",
-    });
+    setUserInfo(loginData);
+    reset();
   };
 
   return (
@@ -131,7 +110,7 @@ const SingIn = () => {
             </Typography>
 
             {/* form */}
-            {errorMsg && <Alert severity="error">{errorMsg.message}</Alert>}
+            {/* {errorMsg && <Alert severity="error">{errorMsg.message}</Alert>} */}
             <Box
               component="form"
               onSubmit={handleSubmit(onSubmit)}

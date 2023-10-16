@@ -1,27 +1,45 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axiosInstance from "../../services/AxiosInstance";
+import { EndPoint } from "../../services/API";
 
+// createAsyncThunk
+export const getAuth = createAsyncThunk<any, any>(
+  "auth/getAuthentication",
+  async (userInfo) => {
+    const response = await axiosInstance.post(EndPoint.LOGIN, userInfo);
+    return response.data;
+  }
+);
+
+// Interface
 interface Auth {
   token: string | null;
-  progress: number;
+  loading: boolean;
 }
+
 const authToken = localStorage.getItem("token");
 const initialState: Auth = {
   token: authToken ? authToken : null,
-  progress: 0,
+  loading: false,
 };
 
 export const AuthSlice = createSlice({
   name: "auth",
   initialState,
-  reducers: {
-    setToken: (state, actions) => {
-      state.token = actions.payload;
-    },
-    setProgress: (state, actions) => {
-      state.progress = actions.payload;
-    },
+  reducers: {},
+  extraReducers(builder) {
+    builder.addCase(getAuth.pending, (state) => {
+      state.loading = true;
+    });
+    builder.addCase(getAuth.fulfilled, (state, action) => {
+      state.loading = false;
+      state.token = action.payload.data.token;
+      localStorage.setItem("token", action.payload.data.token);
+    });
+    builder.addCase(getAuth.rejected, (state) => {
+      state.loading = false;
+    });
   },
 });
 
-export const { setToken, setProgress } = AuthSlice.actions;
 export default AuthSlice.reducer;

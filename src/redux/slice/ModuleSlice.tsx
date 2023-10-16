@@ -1,22 +1,48 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { ModuleEndPoint } from "../../services/API";
+import { EndPoint } from "../../services/API";
 import axiosInstance from "../../services/AxiosInstance";
 import { ResponseModuleTypes } from "../../interface/moduleInterface";
+import { toast } from "react-toastify";
 
-// addModuleName async thunk
+// Post Method
 export const addModuleName = createAsyncThunk<any, any>(
   "module/addModule",
-  async (data) => {
-    const response = await axiosInstance.post(ModuleEndPoint.MODULE, data);
+  async (moduleName) => {
+    const response = await axiosInstance.post(EndPoint.MODULE, moduleName);
+    toast.success(response.data.message);
+    return response.data;
+  }
+);
+// Get Method
+export const getModuleData = createAsyncThunk<any, void>(
+  "module/getModule",
+  async () => {
+    const response = await axiosInstance.get(EndPoint.MODULE);
+    return response.data;
+  }
+);
+// Put Method
+export const updateModuleName = createAsyncThunk<any, any>(
+  "module/updateModule",
+  async (updateModuleData) => {
+    const response = await axiosInstance.put(
+      `${EndPoint.MODULE}/${updateModuleData.id}`,
+      { name: updateModuleData.name }
+    );
+    toast.success(response.data.message);
     return response.data;
   }
 );
 
-export const getModuleData = createAsyncThunk<any, void>(
-  "module/getModule",
-  async () => {
-    const response = await axiosInstance.get(ModuleEndPoint.MODULE);
-    return response.data;
+// Delete Method
+export const deleteModuleName = createAsyncThunk<any, any>(
+  "module/deleteModule",
+  async (deleteModuleId) => {
+    const response = await axiosInstance.delete(
+      `${EndPoint.MODULE}/${deleteModuleId}`
+    );
+    toast.success(response.data.message);
+    return deleteModuleId;
   }
 );
 
@@ -36,6 +62,7 @@ export const ModuleSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers: (builder) => {
+    // Add Module
     builder.addCase(addModuleName.pending, (state) => {
       state.loading = true;
     });
@@ -47,7 +74,7 @@ export const ModuleSlice = createSlice({
     builder.addCase(addModuleName.rejected, (state) => {
       state.loading = false;
     });
-
+    // Get Module
     builder.addCase(getModuleData.pending, (state) => {
       state.loading = true;
     });
@@ -58,9 +85,39 @@ export const ModuleSlice = createSlice({
     builder.addCase(getModuleData.rejected, (state) => {
       state.loading = false;
     });
+
+    // Put Module
+    builder.addCase(updateModuleName.pending, (state) => {
+      state.loading = true;
+    });
+    builder.addCase(updateModuleName.fulfilled, (state, action) => {
+      state.loading = false;
+      // improve your logic when you click edit instant update value
+      const index = state.data.findIndex(
+        (data) => data.id === action.payload.data.id
+      );
+      state.data[index] = action.payload.data;
+    });
+    builder.addCase(updateModuleName.rejected, (state) => {
+      state.loading = false;
+    });
+
+    // Delete Module
+    builder.addCase(deleteModuleName.pending, (state) => {
+      state.loading = true;
+    });
+    builder.addCase(deleteModuleName.fulfilled, (state, action) => {
+      state.loading = false;
+      const index = state.data.findIndex((data) => data.id === action.payload);
+      if (index !== -1) {
+        state.data.splice(index, 1);
+      }
+    });
+    builder.addCase(deleteModuleName.rejected, (state) => {
+      state.loading = false;
+    });
   },
 });
 
 // export
-export const {} = ModuleSlice.actions;
 export default ModuleSlice.reducer;

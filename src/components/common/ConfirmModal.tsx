@@ -8,15 +8,15 @@ import {
 } from "@mui/material";
 import Paper, { PaperProps } from "@mui/material/Paper";
 import Draggable from "react-draggable";
-import axiosInstance from "../../services/AxiosInstance";
-import { Dashboard } from "../../services/API";
-import { useDispatch } from "react-redux";
-import { setProgress } from "../../redux/slice/AuthSlice";
-import { ConfirmModalType } from "./DataTable";
-import { removeModule } from "../../redux/slice/ModuleSlice";
-import { ErrorResponseType } from "../../page/SingIn";
-import axios from "axios";
-import { toast } from "react-toastify";
+
+export interface ConfirmModalType {
+  title: string;
+  description: string;
+  btnCancelTxt: string;
+  btnConfirmTxt: string;
+  cancelHandler: () => void;
+  confirmHandler: () => void;
+}
 
 function PaperComponent(props: PaperProps) {
   return (
@@ -29,33 +29,12 @@ function PaperComponent(props: PaperProps) {
   );
 }
 const ConfirmModal = ({ modalData }: { modalData: ConfirmModalType }) => {
-  const dispatch = useDispatch();
-  const handleDelete = async (id: number) => {
-    dispatch(setProgress(30));
-    try {
-      const response = await axiosInstance.delete(`${Dashboard.MODULE}/${id}`);
-
-      if (!response.data.success) {
-        throw new Error(response.data.message);
-      }
-
-      dispatch(removeModule(id));
-      toast.success(response.data.message);
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        const errResponse: ErrorResponseType = error.response?.data;
-        toast.error(errResponse.message);
-      }
-    }
-    modalData.onCancle();
-    dispatch(setProgress(100));
-  };
   return (
     <div>
       <Dialog
         open={!!modalData}
         onClose={() => {
-          modalData.onCancle();
+          modalData.cancelHandler;
         }}
         PaperComponent={PaperComponent}
         aria-labelledby="draggable-dialog-title"
@@ -67,11 +46,11 @@ const ConfirmModal = ({ modalData }: { modalData: ConfirmModalType }) => {
           <DialogContentText>{modalData.description}</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button autoFocus onClick={modalData.onCancle}>
-            {modalData.cancelBtnText}
+          <Button autoFocus onClick={modalData.cancelHandler}>
+            {modalData.btnCancelTxt}
           </Button>
-          <Button onClick={() => handleDelete(modalData.onDelete())}>
-            {modalData.confirmBtnText}
+          <Button onClick={modalData.confirmHandler}>
+            {modalData.btnConfirmTxt}
           </Button>
         </DialogActions>
       </Dialog>

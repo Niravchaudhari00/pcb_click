@@ -1,10 +1,6 @@
 //  Note :  add / after that add API
-// AUTH API
-export enum Auth {
-  LOGIN = `/admin/auth/login`,
-}
-
-// DASHBOARD API
-export const ModuleEndPoint = {
+//  API
+export const EndPoint = {
+  LOGIN: `/admin/auth/login`,
   MODULE: `/admin/module`,
 };
