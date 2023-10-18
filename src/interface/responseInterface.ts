@@ -17,3 +17,20 @@ export interface ResponseRoleType {
   level: number;
   role_category: string;
 }
+
+export interface ResponsePermissionType {
+  id: number;
+  role_id: number;
+  module_id: number;
+  permission_read: number;
+  permission_write: number;
+  permission_update: number;
+  permission_delete: number;
+  created_by: null;
+  modified_by: number;
+  created_time: string;
+  modified_time: string;
+  tbl_module: {
+    name: string;
+  };
+}

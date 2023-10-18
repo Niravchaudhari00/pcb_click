@@ -21,7 +21,11 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import NotifyError from "../components/common/NotifyError";
 import { useEffect, useState } from "react";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+import {
+  SettingsOutlined,
+  Visibility,
+  VisibilityOff,
+} from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
 import { rootState, useAppDispatch } from "../redux/store";
 import { getAuth } from "../redux/slice/AuthSlice";
@@ -56,17 +60,25 @@ const SingIn = () => {
   const navigate = useNavigate();
   const [userInfo, setUserInfo] = useState<UserInformation | null>(null);
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const { loading } = useSelector((state: rootState) => state.auth);
+  const { loading, token } = useSelector((state: rootState) => state.auth);
 
   // show password handler
   const handleClickShowPassword = () => setShowPassword((prev) => !prev);
 
+  // authtoken
+
   useEffect(() => {
     if (userInfo !== null) {
       dispatch(getAuth(userInfo));
-      navigate("/dashboard");
     }
   }, [userInfo]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/dashboard");
+    }
+  }, [token]);
   // Login Handler
   const onSubmit: SubmitHandler<UserInformation> = async (data) => {
     const loginData = {

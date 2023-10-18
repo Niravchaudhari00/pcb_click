@@ -55,11 +55,7 @@ const Role = () => {
     null
   );
   const [DeleteModuleId, setDeleteModuleId] = useState<number | null>(null);
-
   const dispatch = useAppDispatch();
-
-  const [count, setCount] = useState<number>(0);
-
   const {
     handleSubmit,
     reset,
@@ -67,12 +63,11 @@ const Role = () => {
     control,
     setValue,
     getValues,
+    register,
   } = useForm<RoleType>({ resolver: yupResolver(schema) });
 
-  const fetchRoleData: ResponseRoleType[] = useSelector(
-    (state: rootState) => state.role.roleData
-  );
-
+  const { roleData, loading } = useSelector((state: rootState) => state.role);
+  const [sameLevelEdit, setSameLevelEdit] = useState<number>();
   // Get Role
   useEffect(() => {
     dispatch(getRoleData());
@@ -80,10 +75,10 @@ const Role = () => {
 
   // Set value in state
   useEffect(() => {
-    if (fetchRoleData.length > 0) {
-      setRoleDataRows(fetchRoleData);
+    if (roleData.length > 0) {
+      setRoleDataRows(roleData);
     }
-  }, [fetchRoleData]);
+  }, [roleData]);
 
   //
   useEffect(() => {
@@ -105,14 +100,8 @@ const Role = () => {
   // on submit handler
   const onSubmit: SubmitHandler<RoleType> = (data) => {
     console.log(data);
-
     reset();
   };
-
-  // component run count
-  useEffect(() => {
-    setCount((prevCount) => prevCount + 1);
-  }, []);
 
   // console.log("component run count =>", count);
 
@@ -127,7 +116,6 @@ const Role = () => {
     });
     setExpanded(true);
     setIsEdit(true);
-    console.log(params);
   };
 
   const handleDelete = (params: GridRenderCellParams) => {
@@ -146,6 +134,11 @@ const Role = () => {
     });
   };
 
+  // handle change same leve edit
+  const handleChange = (isCheck: boolean) => {
+    const value: number = isCheck ? 1 : 0;
+    setSameLevelEdit(value);
+  };
   // console.log("same level edit value", roleUpdateValue?.same_level_edit);
   // Gride Data table field
   const columns: GridColDef[] = [
@@ -312,29 +305,18 @@ const Role = () => {
                 </div>
 
                 <div className="flex items-center my-5">
-                  <Controller
-                    control={control}
-                    name="same_level_edit"
-                    render={({ field }) => (
-                      <FormGroup>
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              {...field}
-                              checked={
-                                isEdit
-                                  ? roleUpdateValue?.same_level_edit
-                                    ? true
-                                    : false
-                                  : false
-                              }
-                            />
-                          }
-                          label="Same Level Edit"
+                  <FormGroup>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          {...register("same_level_edit")}
+                          value={sameLevelEdit}
+                          onChange={(e) => handleChange(e.target.checked)}
                         />
-                      </FormGroup>
-                    )}
-                  />
+                      }
+                      label="Same Level Edit"
+                    />
+                  </FormGroup>
                 </div>
                 <div className="flex justify-center gap-2">
                   <Button
@@ -352,7 +334,7 @@ const Role = () => {
           </Accordion>
         </Box>
 
-        <Table columns={columns} rows={roleDataRows} />
+        <Table columns={columns} rows={roleDataRows} loading={loading} />
       </Container>
 
       {confirmModal && <ConfirmModal modalData={confirmModal} />}

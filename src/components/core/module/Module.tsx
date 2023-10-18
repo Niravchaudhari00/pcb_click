@@ -80,6 +80,7 @@ const Module = () => {
   const moduleData: ResponseModuleTypes[] = useSelector(
     (state: rootState) => state.module.data
   );
+  const { loading } = useSelector((state: rootState) => state.module);
 
   // Set data in setModuleDataRows
   useEffect(() => {
@@ -315,7 +316,7 @@ const Module = () => {
             </AccordionDetails>
           </Accordion>
         </Box>
-        <Table columns={columns} rows={moduleDataRows} />
+        <Table columns={columns} rows={moduleDataRows} loading={loading} />
       </Container>
 
       {confirmModal && <ConfirmModal modalData={confirmModal} />}
