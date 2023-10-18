@@ -123,7 +123,7 @@ const Permission = () => {
       renderCell: (params) => {
         return (
           <Box>
-            <Checkbox checked={params.row} />
+            <Checkbox />
           </Box>
         );
       },
