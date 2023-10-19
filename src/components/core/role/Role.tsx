@@ -38,7 +38,7 @@ interface RoleType {
   id?: number;
   role_name: string;
   level: number;
-  same_level_edit?: number;
+  same_level_edit?: number | boolean;
 }
 
 const schema = yup.object({
@@ -63,11 +63,10 @@ const Role = () => {
     control,
     setValue,
     getValues,
-    register,
   } = useForm<RoleType>({ resolver: yupResolver(schema) });
 
   const { roleData, loading } = useSelector((state: rootState) => state.role);
-  const [sameLevelEdit, setSameLevelEdit] = useState<number>();
+
   // Get Role
   useEffect(() => {
     dispatch(getRoleData());
@@ -84,9 +83,10 @@ const Role = () => {
   useEffect(() => {
     if (isEdit) {
       if (roleUpdateValue !== null) {
+        const value = !!roleUpdateValue.same_level_edit;
         setValue("role_name", roleUpdateValue.role_name);
         setValue("level", roleUpdateValue.level);
-        setValue("same_level_edit", roleUpdateValue.same_level_edit);
+        setValue("same_level_edit", value);
       }
     }
   }, [roleUpdateValue]);
@@ -134,12 +134,6 @@ const Role = () => {
     });
   };
 
-  // handle change same leve edit
-  const handleChange = (isCheck: boolean) => {
-    const value: number = isCheck ? 1 : 0;
-    setSameLevelEdit(value);
-  };
-  // console.log("same level edit value", roleUpdateValue?.same_level_edit);
   // Gride Data table field
   const columns: GridColDef[] = [
     {
@@ -305,18 +299,14 @@ const Role = () => {
                 </div>
 
                 <div className="flex items-center my-5">
-                  <FormGroup>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          {...register("same_level_edit")}
-                          value={sameLevelEdit}
-                          onChange={(e) => handleChange(e.target.checked)}
-                        />
-                      }
-                      label="Same Level Edit"
-                    />
-                  </FormGroup>
+                  <Controller
+                    control={control}
+                    name="same_level_edit"
+                    render={({ field }) => (
+                      <Checkbox {...field} checked={!!field.value} />
+                    )}
+                  />
+                  <Typography>Same Level Edit</Typography>
                 </div>
                 <div className="flex justify-center gap-2">
                   <Button

@@ -30,6 +30,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { rootState, useAppDispatch } from "../redux/store";
 import { getAuth } from "../redux/slice/AuthSlice";
 import useToken from "../utils/features/setTokenInCookie";
+import LoadingBar from "../components/common/LoadingBar";
 
 interface UserInformation {
   email_address: string;
@@ -90,7 +91,8 @@ const SingIn = () => {
   };
 
   return (
-    <div className="">
+    <div>
+      <LoadingBar loading={loading} />
       <Grid
         bgcolor={BgColor.grayWhite}
         container

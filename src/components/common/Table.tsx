@@ -7,7 +7,7 @@ interface propsType {
 }
 const Table = (props: propsType) => {
   return (
-    <div style={{ width: "100%" }}>
+    <div className="w-[500px] md:w-[768px] lg:w-full">
       {props.loading ? (
         props.rows.map((_: any, i: number) => (
           <Box key={i} sx={{ mx: "auto", width: "100%" }}>
@@ -20,6 +20,9 @@ const Table = (props: propsType) => {
             display: "flex",
             userSelect: "none",
             paddingX: 1,
+            border: "none",
+            // borderRadius: 5,
+            // boxShadow: "1px 1px 2px 2px grey",
           }}
           rows={props.rows}
           columns={props.columns}

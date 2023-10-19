@@ -82,10 +82,13 @@ const Module = () => {
   );
   const { loading } = useSelector((state: rootState) => state.module);
 
+  const handleSetModuleData = (data: ResponseModuleTypes[]) => {
+    setModuleDataRows(data);
+  };
   // Set data in setModuleDataRows
   useEffect(() => {
     if (moduleData.length > 0) {
-      setModuleDataRows(moduleData);
+      handleSetModuleData(moduleData);
     }
   }, [moduleData]);
 
@@ -186,7 +189,7 @@ const Module = () => {
     setCount((prevCount) => prevCount + 1);
   }, []);
 
-  console.log(count);
+  // console.log(count);
   // Gride Table columns
 
   const columns: GridColDef[] = [
@@ -196,13 +199,12 @@ const Module = () => {
       width: 100,
       headerAlign: "left",
       disableColumnMenu: true,
-      flex: 1,
     },
     {
       field: "name",
       headerName: "Name",
       disableColumnMenu: true,
-      flex: 5,
+      flex: 2,
     },
     {
       field: "action",
@@ -210,6 +212,7 @@ const Module = () => {
       disableColumnMenu: true,
       sortable: false,
       flex: 1,
+
       renderCell: (params) => {
         return (
           <Box>
@@ -230,7 +233,7 @@ const Module = () => {
   ];
 
   return (
-    <div>
+    <div className="w-[500px] md:w-[768px] lg:w-full">
       <Container>
         <Box
           sx={{
@@ -256,7 +259,10 @@ const Module = () => {
               gap: 3,
             }}
           >
-            <SearchKeyword moduleData={moduleDataRows} />
+            <SearchKeyword
+              moduleData={moduleDataRows}
+              handleSetModuleData={handleSetModuleData}
+            />
             {/* Add Button when you click open form  */}
             <Button onClick={HandleAddAndCancel} variant="contained">
               Add

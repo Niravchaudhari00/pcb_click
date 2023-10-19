@@ -3,15 +3,50 @@ import SearchIcon from "@mui/icons-material/Search";
 import { ResponseModuleTypes } from "../../interface/moduleInterface";
 import { useEffect, useState } from "react";
 
-const SearchKeyword = ({
-  moduleData,
-}: {
+interface PropsType {
   moduleData: ResponseModuleTypes[];
-}) => {
-  const [searchKeyWord, setSearchKeyWord] = useState<string>("");
-  const searchValue = moduleData.filter((data) =>
-    data.name.includes(searchKeyWord)
+  handleSetModuleData: (data: ResponseModuleTypes[]) => void;
+}
+const SearchKeyword = (props: PropsType) => {
+  const [findModuleData, setFindModuleData] = useState<ResponseModuleTypes[]>(
+    []
   );
+  const [searchKeyWord, setSearchKeyWord] = useState<string>("");
+
+  const searchList = findModuleData.filter(
+    (data) =>
+      data.name
+        .toLocaleLowerCase()
+        .indexOf(searchKeyWord.toLocaleLowerCase()) !== -1
+  );
+
+  useEffect(() => {
+    if (props.moduleData.length > 0) {
+      setFindModuleData(props.moduleData);
+    }
+  }, [props.moduleData]);
+
+  useEffect(() => {
+    if (searchKeyWord.trim() === "") {
+    } else {
+      // props.handleSetModuleData(searchList);
+      console.log(`searchList =>`, searchList);
+    }
+  }, [searchList]);
+
+  // props.handleSetModuleData(searchList);
+  // Search
+  // const searchValue = findModuleData.filter((data) =>
+  //   data.name.includes(searchKeyWord)
+  // );
+
+  // useEffect(() => {
+  //   if (searchKeyWord.trim() === "") {
+  //     props.handleSetModuleData(props.moduleData);
+  //   } else {
+  //     props.handleSetModuleData(searchList);
+  //   }
+  // }, [searchKeyWord]);
 
   return (
     <div>

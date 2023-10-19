@@ -1,4 +1,5 @@
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const BASE_URL: string = import.meta.env.VITE_REACT_BASE_URL;
 const axiosInstance = axios.create({
@@ -27,8 +28,15 @@ axiosInstance.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.log(error);
-    throw new Error(error);
+    if (
+      (error.response && error.response.data.status === 401) ||
+      (error.response && error.response.data.status === 409) ||
+      (error.response && error.response.data.status === 404)
+    ) {
+      toast.error(error.response.data.message);
+    } else {
+      toast.error(error.response.message);
+    }
   }
 );
 
