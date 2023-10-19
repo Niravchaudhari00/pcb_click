@@ -2,7 +2,6 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../services/AxiosInstance";
 import { EndPoint } from "../../services/API";
 import { ResponsePermissionType } from "../../interface/responseInterface";
-import { toast } from "react-toastify";
 import { PermissionPayloadType } from "../../components/core/permission/Permission";
 
 // Get Permission data

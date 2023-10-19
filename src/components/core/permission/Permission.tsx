@@ -51,7 +51,6 @@ const Permission = () => {
     PermissionPayloadType | undefined
   >();
 
-  console.log("permission data");
   // Get Permission Data
   useEffect(() => {
     dispatch(getPermissionData(selectedRoleId));
@@ -90,10 +89,15 @@ const Permission = () => {
     }
   };
 
+  // const updateValue = permissionDataRows.map((data) => ({
+  //   ...data,
+  //   permission_read: data.permission_read === 1 ? 0 : 1,
+  // }));
+
   // ++++++++++++ Operations ++++++++++++++
 
-  const handleGivenPermissionAll = (params: any, type: string) => {
-    console.log(`params : `, params, type);
+  const handleGivenPermissionAll = (newValue: boolean, type: string) => {
+    console.log(`params : `, newValue, type);
   };
 
   const handleGivenPermission = (params: any, fieldName: string) => {
