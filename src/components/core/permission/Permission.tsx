@@ -157,7 +157,9 @@ const Permission = () => {
   };
 
   useEffect(() => {
-    permissionAllCheckedOrNot();
+    if (permissionDataRows.length > 0) {
+      permissionAllCheckedOrNot();
+    }
   }, [permissionDataRows]);
 
   // handle permissionAllCheckedOrNot

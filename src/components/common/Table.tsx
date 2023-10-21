@@ -1,15 +1,26 @@
 import { Box, Skeleton } from "@mui/material";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import { DataGrid, GridColDef, GridOverlay } from "@mui/x-data-grid";
 interface propsType {
   columns: GridColDef[];
   rows: any;
   loading?: boolean;
 }
+
+const NoDataFound = () => {
+  return (
+    <GridOverlay>
+      <div className="w-[100vw] flex justify-center items-center">
+        <p className="font-bold text-xl capitalize">no data available</p>
+      </div>
+    </GridOverlay>
+  );
+};
 const Table = (props: propsType) => {
+  const { columns, rows, loading } = props;
   return (
     <div className="w-[500px] md:w-[768px] lg:w-full">
-      {props.loading ? (
-        props.rows.map((_: any, i: number) => (
+      {loading ? (
+        rows.map((_: any, i: number) => (
           <Box key={i} sx={{ mx: "auto", width: "100%" }}>
             <Skeleton height={50} animation="pulse" />
           </Box>
@@ -21,17 +32,17 @@ const Table = (props: propsType) => {
             userSelect: "none",
             paddingX: 1,
             border: "none",
-            // borderRadius: 5,
-            // boxShadow: "1px 1px 2px 2px grey",
           }}
-          rows={props.rows}
-          columns={props.columns}
-          initialState={{
-            pagination: {
-              paginationModel: { page: 0, pageSize: 10 },
-            },
-          }}
+          rows={rows}
+          columns={columns}
+          autoHeight
+          pagination
           pageSizeOptions={[5, 10, 20, 50, 100]}
+          slots={{
+            noRowsOverlay: NoDataFound,
+          }}
+          paginationMode="client"
+          autoPageSize
         />
       )}
     </div>
