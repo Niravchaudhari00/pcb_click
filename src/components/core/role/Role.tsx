@@ -33,6 +33,7 @@ import { Controller, useForm, SubmitHandler } from "react-hook-form";
 import NotifyError from "../../common/NotifyError";
 import { yupResolver } from "@hookform/resolvers/yup";
 import ConfirmModal, { ConfirmModalType } from "../../common/ConfirmModal";
+import SearchKeyword from "../../common/SearchKeyword";
 
 interface RoleType {
   id?: number;
@@ -54,7 +55,9 @@ const Role = () => {
   const [confirmModal, setConfirmModal] = useState<ConfirmModalType | null>(
     null
   );
+
   const [DeleteModuleId, setDeleteModuleId] = useState<number | null>(null);
+
   const dispatch = useAppDispatch();
   const {
     handleSubmit,
@@ -62,7 +65,6 @@ const Role = () => {
     formState: { errors },
     control,
     setValue,
-    getValues,
   } = useForm<RoleType>({ resolver: yupResolver(schema) });
 
   const { roleData, loading } = useSelector((state: rootState) => state.role);
@@ -72,10 +74,14 @@ const Role = () => {
     dispatch(getRoleData());
   }, []);
 
+  const handleSetRoleData = (data: ResponseRoleType[]) => {
+    setRoleDataRows(data);
+  };
+
   // Set value in state
   useEffect(() => {
     if (roleData.length > 0) {
-      setRoleDataRows(roleData);
+      handleSetRoleData(roleData);
     }
   }, [roleData]);
 
@@ -103,9 +109,7 @@ const Role = () => {
     reset();
   };
 
-  // console.log("component run count =>", count);
-
-  // operations delete update //
+  // +++++++++++++ Operations +++++++++ //
 
   const handleUpdate = (params: GridRenderCellParams) => {
     setRoleUpdateValue({
@@ -226,7 +230,10 @@ const Role = () => {
               gap: 3,
             }}
           >
-            {/* <SearchKeyword /> */}
+            <SearchKeyword
+              moduleData={roleData}
+              handleSetModuleData={handleSetRoleData}
+            />
             {/* Add Button when you click open form  */}
             <Button
               onClick={() => HandleAddAndCancel(true)}

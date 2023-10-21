@@ -13,17 +13,28 @@ export const getPermissionData = createAsyncThunk<any, number>(
   }
 );
 
-export const permissionReadUpdate = createAsyncThunk<
-  any,
-  PermissionPayloadType
->("permission/updatePermission", async (updateData) => {
-  const response = await axiosInstance.post(
-    `${EndPoint.PERMISSION}/${"update"}`,
-    updateData
-  );
+export const permissionUpdate = createAsyncThunk<any, PermissionPayloadType>(
+  "permission/updatePermission",
+  async (updateData) => {
+    const response = await axiosInstance.post(
+      `${EndPoint.PERMISSION}/${"update"}`,
+      updateData
+    );
 
-  return response.data.data;
-});
+    return response.data.data;
+  }
+);
+
+export const permissionUpdateAll = createAsyncThunk<any, any>(
+  "permission/updateAllPermission",
+  async (parmissionUpdateAllData) => {
+    await axiosInstance.post(
+      `${EndPoint.PERMISSION}/${"update-all"}`,
+      parmissionUpdateAllData
+    );
+    return parmissionUpdateAllData;
+  }
+);
 
 export interface PermissionType {
   permissionData: Array<ResponsePermissionType>;
@@ -53,11 +64,11 @@ export const PermissionSlice = createSlice({
     builder.addCase(getPermissionData.rejected, (state) => {
       state.loading = false;
     });
-
-    builder.addCase(permissionReadUpdate.pending, (state) => {
+    // permission update
+    builder.addCase(permissionUpdate.pending, (state) => {
       state.updateLoading = true;
     });
-    builder.addCase(permissionReadUpdate.fulfilled, (state, action) => {
+    builder.addCase(permissionUpdate.fulfilled, (state, action) => {
       state.updateLoading = false;
       let index = state.permissionData.findIndex(
         (data) =>
@@ -73,7 +84,20 @@ export const PermissionSlice = createSlice({
       }
     });
 
-    builder.addCase(permissionReadUpdate.rejected, (state) => {
+    builder.addCase(permissionUpdate.rejected, (state) => {
+      state.updateLoading = false;
+    });
+
+    // permission all update
+    builder.addCase(permissionUpdateAll.pending, (state) => {
+      state.updateLoading = true;
+    });
+
+    builder.addCase(permissionUpdateAll.fulfilled, (state) => {
+      state.updateLoading = false;
+    });
+
+    builder.addCase(permissionUpdateAll.rejected, (state) => {
       state.updateLoading = false;
     });
   },

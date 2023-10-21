@@ -35,7 +35,7 @@ axiosInstance.interceptors.response.use(
     ) {
       toast.error(error.response.data.message);
     } else {
-      toast.error(error.response.message);
+      toast.error(error.response.data.message);
     }
   }
 );

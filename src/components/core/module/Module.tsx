@@ -35,7 +35,8 @@ import { useSelector } from "react-redux";
 import { ResponseModuleTypes } from "../../../interface/moduleInterface";
 import ConfirmModal, { ConfirmModalType } from "../../common/ConfirmModal";
 import SearchKeyword from "../../common/SearchKeyword";
-
+import AddIcon from "@mui/icons-material/Add";
+import ClearIcon from "@mui/icons-material/Clear";
 //Define Interface
 export interface ModuleNameType {
   id?: number;
@@ -58,13 +59,10 @@ const Module = () => {
   const [updateValueData, setUpdateValueData] = useState<ModuleNameType | null>(
     null
   );
-
   const [deleteModuleId, setDeleteModuleId] = useState<number | null>(null);
   const [confirmModal, setConfirmModal] = useState<ConfirmModalType | null>(
     null
   );
-  const [count, setCount] = useState(0);
-
   const dispatch = useAppDispatch();
 
   // Use form hook
@@ -85,6 +83,7 @@ const Module = () => {
   const handleSetModuleData = (data: ResponseModuleTypes[]) => {
     setModuleDataRows(data);
   };
+
   // Set data in setModuleDataRows
   useEffect(() => {
     if (moduleData.length > 0) {
@@ -185,13 +184,6 @@ const Module = () => {
     });
   };
 
-  useEffect(() => {
-    setCount((prevCount) => prevCount + 1);
-  }, []);
-
-  // console.log(count);
-  // Gride Table columns
-
   const columns: GridColDef[] = [
     {
       field: "id",
@@ -260,12 +252,17 @@ const Module = () => {
             }}
           >
             <SearchKeyword
-              moduleData={moduleDataRows}
+              moduleData={moduleData}
               handleSetModuleData={handleSetModuleData}
+              // handleSearchText={handleSearchText}
             />
             {/* Add Button when you click open form  */}
-            <Button onClick={HandleAddAndCancel} variant="contained">
-              Add
+            <Button
+              startIcon={!expanded ? <AddIcon /> : <ClearIcon />}
+              onClick={HandleAddAndCancel}
+              variant="contained"
+            >
+              {!expanded ? "Add" : "Cancel"}
             </Button>
           </Box>
         </Box>

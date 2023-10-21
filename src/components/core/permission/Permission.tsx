@@ -17,12 +17,14 @@ import {
 } from "../../../interface/responseInterface";
 import {
   getPermissionData,
-  permissionReadUpdate,
+  permissionUpdate,
+  permissionUpdateAll,
 } from "../../../redux/slice/PermissionSlice";
 import { GridColDef } from "@mui/x-data-grid";
 import Table from "../../common/Table";
 import { getRoleData } from "../../../redux/slice/RoleSlice";
 import LoadingBar from "../../common/LoadingBar";
+import SearchKeyword from "../../common/SearchKeyword";
 
 export interface PermissionPayloadType {
   role_id: number;
@@ -33,23 +35,39 @@ export interface PermissionPayloadType {
   permission_write?: number;
 }
 
+export interface AllPermissionUpdate {
+  role_id: number;
+  type: string;
+  value: number;
+}
+
 const Permission = () => {
   const dispatch = useAppDispatch();
-  const [selectedRoleId, setSelectedRoleId] = useState<number>(1);
+  const [selectedRoleId, setSelectedRoleId] = useState<number>(4);
   const [permissionDataRows, setPermissionRows] = useState<
     ResponsePermissionType[]
   >([]);
+
   const [selectRole, setSelectRole] = useState<ResponseRoleType[]>([]);
+  const [updateAllPermission, setUpdateAllPermission] = useState<
+    AllPermissionUpdate | undefined
+  >();
+
+  // get state in slice
   const { permissionData, loading, updateLoading } = useSelector(
     (state: rootState) => state.permission
   );
 
   // get role
   const { roleData } = useSelector((state: rootState) => state.role);
+  const [permission, setPermission] = useState<any | undefined>();
 
-  const [permission, setPermission] = useState<
-    PermissionPayloadType | undefined
-  >();
+  const [globalPermission, setGlobalPermission] = useState({
+    permission_write: 0,
+    permission_delete: 0,
+    permission_update: 0,
+    permission_read: 0,
+  });
 
   // Get Permission Data
   useEffect(() => {
@@ -61,10 +79,13 @@ const Permission = () => {
     dispatch(getRoleData());
   }, []);
 
+  const handleSetPermissionData = (data: ResponsePermissionType[]) => {
+    setPermissionRows(data);
+  };
   // set permission data in state
   useEffect(() => {
     if (permissionData.length > 0) {
-      setPermissionRows(permissionData);
+      handleSetPermissionData(permissionData);
     }
   }, [permissionData]);
 
@@ -75,12 +96,19 @@ const Permission = () => {
     }
   }, [roleData]);
 
-  // permission read
+  // permission
   useEffect(() => {
     if (permission !== undefined) {
-      dispatch(permissionReadUpdate(permission));
+      dispatch(permissionUpdate(permission));
     }
   }, [permission]);
+
+  // update all permission
+  useEffect(() => {
+    if (updateAllPermission) {
+      dispatch(permissionUpdateAll(updateAllPermission));
+    }
+  }, [updateAllPermission]);
 
   const handleChangeRoleId = (event: any) => {
     const id = event.target.value;
@@ -89,15 +117,27 @@ const Permission = () => {
     }
   };
 
-  // const updateValue = permissionDataRows.map((data) => ({
-  //   ...data,
-  //   permission_read: data.permission_read === 1 ? 0 : 1,
-  // }));
-
   // ++++++++++++ Operations ++++++++++++++
 
-  const handleGivenPermissionAll = (newValue: boolean, type: string) => {
-    console.log(`params : `, newValue, type);
+  const handleGivenPermissionAll = (
+    newValue: boolean,
+    type: string,
+    role_id: number
+  ) => {
+    const value = newValue ? 1 : 0;
+    const newPD = permissionDataRows.map((data) => {
+      let xyz: any = { ...data };
+      xyz[type] = value;
+      return xyz;
+    });
+
+    setPermissionRows(newPD);
+    const permissionAllUpdatePayload = {
+      role_id: role_id,
+      type: type.split("_")[1],
+      value: value,
+    };
+    setUpdateAllPermission(permissionAllUpdatePayload);
   };
 
   const handleGivenPermission = (params: any, fieldName: string) => {
@@ -114,6 +154,40 @@ const Permission = () => {
       permission_write: xyz.permission_write,
     };
     setPermission(upatePermissionPayload);
+  };
+
+  useEffect(() => {
+    permissionAllCheckedOrNot();
+  }, [permissionDataRows]);
+
+  // handle permissionAllCheckedOrNot
+  const permissionAllCheckedOrNot = () => {
+    let permission_read = 1;
+    let permission_write = 1;
+    let permission_update = 1;
+    let permission_delete = 1;
+
+    permissionDataRows.map((data) => {
+      if (data.permission_read === 0) {
+        permission_read = 0;
+      }
+      if (data.permission_update === 0) {
+        permission_update = 0;
+      }
+      if (data.permission_write === 0) {
+        permission_write = 0;
+      }
+      if (data.permission_delete === 0) {
+        permission_delete = 0;
+      }
+    });
+
+    setGlobalPermission({
+      permission_delete,
+      permission_read,
+      permission_update,
+      permission_write,
+    });
   };
 
   const columns: GridColDef[] = [
@@ -137,12 +211,17 @@ const Permission = () => {
       disableColumnMenu: true,
       sortable: false,
       flex: 5,
-      renderHeader: (params) => {
+      renderHeader: () => {
         return (
           <Box>
             <Checkbox
+              checked={Boolean(globalPermission.permission_read)}
               onClick={(e: any) =>
-                handleGivenPermissionAll(e.target.checked, "read")
+                handleGivenPermissionAll(
+                  e.target.checked,
+                  "permission_read",
+                  selectedRoleId
+                )
               }
             />
             <label htmlFor="" className="font-bold">
@@ -170,10 +249,19 @@ const Permission = () => {
 
       disableColumnMenu: true,
       sortable: false,
-      renderHeader: (params) => {
+      renderHeader: () => {
         return (
           <Box>
-            <Checkbox />
+            <Checkbox
+              checked={Boolean(globalPermission.permission_write)}
+              onClick={(e: any) =>
+                handleGivenPermissionAll(
+                  e.target.checked,
+                  "permission_write",
+                  selectedRoleId
+                )
+              }
+            />
             <label htmlFor="" className="font-bold">
               Add
             </label>
@@ -200,10 +288,19 @@ const Permission = () => {
       disableColumnMenu: true,
       sortable: false,
       flex: 5,
-      renderHeader: (params) => {
+      renderHeader: () => {
         return (
           <Box>
-            <Checkbox />
+            <Checkbox
+              checked={Boolean(globalPermission.permission_update)}
+              onClick={(e: any) =>
+                handleGivenPermissionAll(
+                  e.target.checked,
+                  "permission_update",
+                  selectedRoleId
+                )
+              }
+            />
             <label htmlFor="" className="font-bold">
               Update
             </label>
@@ -229,10 +326,19 @@ const Permission = () => {
       disableColumnMenu: true,
       sortable: false,
       flex: 5,
-      renderHeader: (params) => {
+      renderHeader: () => {
         return (
           <Box>
-            <Checkbox />
+            <Checkbox
+              checked={Boolean(globalPermission.permission_delete)}
+              onClick={(e: any) =>
+                handleGivenPermissionAll(
+                  e.target.checked,
+                  "permission_delete",
+                  selectedRoleId
+                )
+              }
+            />
             <label htmlFor="" className="font-bold">
               Delete
             </label>
@@ -308,7 +414,10 @@ const Permission = () => {
               gap: 3,
             }}
           >
-            {/* <SearchKeyword moduleData={moduleDataRows} /> */}
+            <SearchKeyword
+              moduleData={permissionData}
+              handleSetModuleData={handleSetPermissionData}
+            />
             {/* Add Button when you click open form  */}
           </Box>
         </Box>

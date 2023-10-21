@@ -1,52 +1,40 @@
 import { InputAdornment, TextField } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import { ResponseModuleTypes } from "../../interface/moduleInterface";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface PropsType {
-  moduleData: ResponseModuleTypes[];
-  handleSetModuleData: (data: ResponseModuleTypes[]) => void;
+  moduleData: any;
+  handleSetModuleData: (data: any[]) => void;
 }
 const SearchKeyword = (props: PropsType) => {
-  const [findModuleData, setFindModuleData] = useState<ResponseModuleTypes[]>(
-    []
-  );
-  const [searchKeyWord, setSearchKeyWord] = useState<string>("");
+  const { moduleData, handleSetModuleData } = props;
 
-  const searchList = findModuleData.filter(
-    (data) =>
-      data.name
-        .toLocaleLowerCase()
-        .indexOf(searchKeyWord.toLocaleLowerCase()) !== -1
-  );
+  const [searchText, setSearchText] = useState<string>("");
+  const [data, setData] = useState<any[]>([]);
 
   useEffect(() => {
-    if (props.moduleData.length > 0) {
-      setFindModuleData(props.moduleData);
-    }
-  }, [props.moduleData]);
+    setData(moduleData);
+  }, [moduleData]);
 
-  useEffect(() => {
-    if (searchKeyWord.trim() === "") {
+  const searchData = useMemo(() => {
+    if (!searchText) {
+      return moduleData;
     } else {
-      // props.handleSetModuleData(searchList);
-      console.log(`searchList =>`, searchList);
+      return data.filter((data) => {
+        if (data.tbl_module !== undefined) {
+          return data.tbl_module.name
+            .toLowerCase()
+            .includes(searchText.toLowerCase());
+        } else {
+          return data.name.toLowerCase().includes(searchText.toLowerCase());
+        }
+      });
     }
-  }, [searchList]);
+  }, [searchText, data]);
 
-  // props.handleSetModuleData(searchList);
-  // Search
-  // const searchValue = findModuleData.filter((data) =>
-  //   data.name.includes(searchKeyWord)
-  // );
-
-  // useEffect(() => {
-  //   if (searchKeyWord.trim() === "") {
-  //     props.handleSetModuleData(props.moduleData);
-  //   } else {
-  //     props.handleSetModuleData(searchList);
-  //   }
-  // }, [searchKeyWord]);
+  useEffect(() => {
+    handleSetModuleData(searchData);
+  }, [searchData]);
 
   return (
     <div>
@@ -55,7 +43,8 @@ const SearchKeyword = (props: PropsType) => {
         placeholder="Search here..."
         variant="outlined"
         size="small"
-        onChange={(e) => setSearchKeyWord(e.target.value)}
+        autoComplete={"false"}
+        onChange={(e) => setSearchText(e.target.value)}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
