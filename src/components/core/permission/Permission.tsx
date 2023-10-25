@@ -82,39 +82,30 @@ const Permission = () => {
   const handleSetPermissionData = (data: ResponsePermissionType[]) => {
     setPermissionRows(data);
   };
+
   // set permission data in state
   useEffect(() => {
-    if (permissionData.length > 0) {
-      handleSetPermissionData(permissionData);
-    }
+    if (permissionData.length > 0) handleSetPermissionData(permissionData);
   }, [permissionData]);
 
   // set role
   useEffect(() => {
-    if (roleData.length > 0) {
-      setSelectRole(roleData);
-    }
+    if (roleData.length > 0) setSelectRole(roleData);
   }, [roleData]);
 
   // permission
   useEffect(() => {
-    if (permission !== undefined) {
-      dispatch(permissionUpdate(permission));
-    }
+    if (permission !== undefined) dispatch(permissionUpdate(permission));
   }, [permission]);
 
   // update all permission
   useEffect(() => {
-    if (updateAllPermission) {
-      dispatch(permissionUpdateAll(updateAllPermission));
-    }
+    if (updateAllPermission) dispatch(permissionUpdateAll(updateAllPermission));
   }, [updateAllPermission]);
 
   const handleChangeRoleId = (event: any) => {
     const id = event.target.value;
-    if (id !== undefined) {
-      setSelectedRoleId((prev) => (prev = id));
-    }
+    if (id) setSelectedRoleId((prev) => (prev = id));
   };
 
   // ++++++++++++ Operations ++++++++++++++
@@ -132,11 +123,13 @@ const Permission = () => {
     });
 
     setPermissionRows(newPD);
+
     const permissionAllUpdatePayload = {
       role_id: role_id,
       type: type.split("_")[1],
       value: value,
     };
+
     setUpdateAllPermission(permissionAllUpdatePayload);
   };
 
@@ -157,9 +150,7 @@ const Permission = () => {
   };
 
   useEffect(() => {
-    if (permissionDataRows.length > 0) {
-      permissionAllCheckedOrNot();
-    }
+    permissionAllCheckedOrNot();
   }, [permissionDataRows]);
 
   // handle permissionAllCheckedOrNot
@@ -217,7 +208,10 @@ const Permission = () => {
         return (
           <Box>
             <Checkbox
-              checked={Boolean(globalPermission.permission_read)}
+              checked={
+                permissionDataRows.length > 0 &&
+                Boolean(globalPermission.permission_read)
+              }
               onClick={(e: any) =>
                 handleGivenPermissionAll(
                   e.target.checked,
@@ -255,7 +249,10 @@ const Permission = () => {
         return (
           <Box>
             <Checkbox
-              checked={Boolean(globalPermission.permission_write)}
+              checked={
+                permissionDataRows.length > 0 &&
+                Boolean(globalPermission.permission_write)
+              }
               onClick={(e: any) =>
                 handleGivenPermissionAll(
                   e.target.checked,
@@ -294,7 +291,10 @@ const Permission = () => {
         return (
           <Box>
             <Checkbox
-              checked={Boolean(globalPermission.permission_update)}
+              checked={
+                permissionDataRows.length > 0 &&
+                Boolean(globalPermission.permission_update)
+              }
               onClick={(e: any) =>
                 handleGivenPermissionAll(
                   e.target.checked,
@@ -332,7 +332,10 @@ const Permission = () => {
         return (
           <Box>
             <Checkbox
-              checked={Boolean(globalPermission.permission_delete)}
+              checked={
+                permissionDataRows.length > 0 &&
+                Boolean(globalPermission.permission_delete)
+              }
               onClick={(e: any) =>
                 handleGivenPermissionAll(
                   e.target.checked,

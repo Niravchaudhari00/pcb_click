@@ -36,13 +36,17 @@ const Table = (props: propsType) => {
           rows={rows}
           columns={columns}
           autoHeight
-          pagination
-          pageSizeOptions={[5, 10, 20, 50, 100]}
+          initialState={{
+            pagination: {
+              paginationModel: {
+                pageSize: 10,
+              },
+            },
+          }}
+          pageSizeOptions={[10, 20, 50, 100]}
           slots={{
             noRowsOverlay: NoDataFound,
           }}
-          paginationMode="client"
-          autoPageSize
         />
       )}
     </div>
