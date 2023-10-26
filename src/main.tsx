@@ -13,15 +13,13 @@ import "react-toastify/dist/ReactToastify.css";
 import "../src/index.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <Provider store={store}>
-      <BrowserRouter>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <App />
-          <ToastContainer />
-        </ThemeProvider>
-      </BrowserRouter>
-    </Provider>
-  </React.StrictMode>
+  <Provider store={store}>
+    <BrowserRouter>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <App />
+        <ToastContainer />
+      </ThemeProvider>
+    </BrowserRouter>
+  </Provider>
 );

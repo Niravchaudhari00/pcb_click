@@ -14,8 +14,8 @@ export interface NavbarlinksProps {
 export const Navbarlinks: Array<NavbarlinksProps> = [
   {
     id: 1,
-    name: "Dashboard",
-    path: "/dashboard",
+    name: "Adminstration",
+    path: "/",
     icon: <HomeOutlinedIcon />,
   },
   {
@@ -38,8 +38,8 @@ export const Navbarlinks: Array<NavbarlinksProps> = [
   },
   {
     id: 5,
-    name: "User Managment",
-    path: "/user-management",
+    name: "User Management",
+    path: "/admin-user",
     icon: <ManageAccountsOutlinedIcon />,
   },
 ];

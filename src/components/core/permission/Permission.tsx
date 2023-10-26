@@ -25,6 +25,9 @@ import Table from "../../common/Table";
 import { getRoleData } from "../../../redux/slice/RoleSlice";
 import LoadingBar from "../../common/LoadingBar";
 import SearchKeyword from "../../common/SearchKeyword";
+import { ResponseModuleTypes } from "../../../interface/moduleInterface";
+import { useLocation, useNavigate } from "react-router-dom";
+import { getPermissionModule } from "../../../redux/slice/ModuleSlice";
 
 export interface PermissionPayloadType {
   role_id: number;
@@ -43,6 +46,7 @@ export interface AllPermissionUpdate {
 
 const Permission = () => {
   const dispatch = useAppDispatch();
+
   const [selectedRoleId, setSelectedRoleId] = useState<number>(4);
   const [permissionDataRows, setPermissionRows] = useState<
     ResponsePermissionType[]
@@ -53,15 +57,6 @@ const Permission = () => {
     AllPermissionUpdate | undefined
   >();
 
-  // get state in slice
-  const { permissionData, loading, updateLoading } = useSelector(
-    (state: rootState) => state.permission
-  );
-
-  // get role
-  const { roleData } = useSelector((state: rootState) => state.role);
-  const [permission, setPermission] = useState<any | undefined>();
-
   const [globalPermission, setGlobalPermission] = useState({
     permission_write: 0,
     permission_delete: 0,
@@ -69,15 +64,52 @@ const Permission = () => {
     permission_read: 0,
   });
 
-  // Get Permission Data
+  const [permission, setPermission] = useState<any | undefined>();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // const [moduleNameData, setModuleNameData] = useState<ResponseModuleTypes[]>(
+  //   []
+  // );
+
+  // get state in slice
+  const { permissionData, loading, updateLoading } = useSelector(
+    (state: rootState) => state.permission
+  );
+
+  // get role
+  const { roleData } = useSelector((state: rootState) => state.role);
+
+  // get module name
+  const { permissionModule } = useSelector((state: rootState) => state.module);
+
   useEffect(() => {
-    dispatch(getPermissionData(selectedRoleId));
-  }, [selectedRoleId]);
+    if (permissionModule?.read === 0) {
+      navigate("/dashboard");
+    }
+  }, []);
+
+  // Get Permission Module
+  useEffect(() => {
+    if (location.pathname) {
+      dispatch(getPermissionModule(location.pathname.split("/")[1]));
+    }
+  }, [location.pathname]);
 
   // Get Role
   useEffect(() => {
     dispatch(getRoleData());
   }, []);
+
+  // Get Permission Data
+  useEffect(() => {
+    dispatch(getPermissionData(selectedRoleId));
+  }, [selectedRoleId]);
+
+  // // set moduleData
+  // useEffect(() => {
+  //   if (data.length > 0) setModuleNameData(data);
+  // }, [data]);
 
   const handleSetPermissionData = (data: ResponsePermissionType[]) => {
     setPermissionRows(data);
@@ -98,6 +130,8 @@ const Permission = () => {
     if (permission !== undefined) dispatch(permissionUpdate(permission));
   }, [permission]);
 
+  // get Module
+
   // update all permission
   useEffect(() => {
     if (updateAllPermission) dispatch(permissionUpdateAll(updateAllPermission));
@@ -105,7 +139,7 @@ const Permission = () => {
 
   const handleChangeRoleId = (event: any) => {
     const id = event.target.value;
-    if (id) setSelectedRoleId((prev) => (prev = id));
+    if (id) setSelectedRoleId(id);
   };
 
   // ++++++++++++ Operations ++++++++++++++
@@ -206,35 +240,41 @@ const Permission = () => {
       flex: 5,
       renderHeader: () => {
         return (
-          <Box>
-            <Checkbox
-              checked={
-                permissionDataRows.length > 0 &&
-                Boolean(globalPermission.permission_read)
-              }
-              onClick={(e: any) =>
-                handleGivenPermissionAll(
-                  e.target.checked,
-                  "permission_read",
-                  selectedRoleId
-                )
-              }
-            />
-            <label htmlFor="" className="font-bold">
-              Read
-            </label>
-          </Box>
+          <>
+            {permissionModule?.read ? (
+              <Box>
+                <Checkbox
+                  checked={
+                    permissionDataRows.length > 0 &&
+                    Boolean(globalPermission.permission_read)
+                  }
+                  onClick={(e: any) =>
+                    handleGivenPermissionAll(
+                      e.target.checked,
+                      "permission_read",
+                      selectedRoleId
+                    )
+                  }
+                />
+                <label htmlFor="" className="font-bold">
+                  Read
+                </label>
+              </Box>
+            ) : null}
+          </>
         );
       },
       renderCell: (params) => {
         return (
           <Box>
-            <Checkbox
-              checked={!!params.row.permission_read}
-              onClick={() => {
-                handleGivenPermission(params, "permission_read");
-              }}
-            />
+            {permissionModule?.read ? (
+              <Checkbox
+                checked={params.row.permission_read}
+                onClick={() => {
+                  handleGivenPermission(params, "permission_read");
+                }}
+              />
+            ) : null}
           </Box>
         );
       },
@@ -247,36 +287,42 @@ const Permission = () => {
       sortable: false,
       renderHeader: () => {
         return (
-          <Box>
-            <Checkbox
-              checked={
-                permissionDataRows.length > 0 &&
-                Boolean(globalPermission.permission_write)
-              }
-              onClick={(e: any) =>
-                handleGivenPermissionAll(
-                  e.target.checked,
-                  "permission_write",
-                  selectedRoleId
-                )
-              }
-            />
-            <label htmlFor="" className="font-bold">
-              Add
-            </label>
-          </Box>
+          <>
+            {permissionModule?.write ? (
+              <Box>
+                <Checkbox
+                  checked={
+                    permissionDataRows.length > 0 &&
+                    Boolean(globalPermission.permission_write)
+                  }
+                  onClick={(e: any) =>
+                    handleGivenPermissionAll(
+                      e.target.checked,
+                      "permission_write",
+                      selectedRoleId
+                    )
+                  }
+                />
+                <label htmlFor="" className="font-bold">
+                  Add
+                </label>
+              </Box>
+            ) : null}
+          </>
         );
       },
       flex: 5,
       renderCell: (params) => {
         return (
           <Box>
-            <Checkbox
-              checked={!!params.row.permission_write}
-              onClick={() => {
-                handleGivenPermission(params, "permission_write");
-              }}
-            />
+            {permissionModule?.write ? (
+              <Checkbox
+                checked={params.row.permission_write}
+                onClick={() => {
+                  handleGivenPermission(params, "permission_write");
+                }}
+              />
+            ) : null}
           </Box>
         );
       },
@@ -289,35 +335,41 @@ const Permission = () => {
       flex: 5,
       renderHeader: () => {
         return (
-          <Box>
-            <Checkbox
-              checked={
-                permissionDataRows.length > 0 &&
-                Boolean(globalPermission.permission_update)
-              }
-              onClick={(e: any) =>
-                handleGivenPermissionAll(
-                  e.target.checked,
-                  "permission_update",
-                  selectedRoleId
-                )
-              }
-            />
-            <label htmlFor="" className="font-bold">
-              Update
-            </label>
-          </Box>
+          <>
+            {permissionModule?.update ? (
+              <Box>
+                <Checkbox
+                  checked={
+                    permissionDataRows.length > 0 &&
+                    Boolean(globalPermission.permission_update)
+                  }
+                  onClick={(e: any) =>
+                    handleGivenPermissionAll(
+                      e.target.checked,
+                      "permission_update",
+                      selectedRoleId
+                    )
+                  }
+                />
+                <label htmlFor="" className="font-bold">
+                  Update
+                </label>
+              </Box>
+            ) : null}
+          </>
         );
       },
       renderCell: (params) => {
         return (
           <Box>
-            <Checkbox
-              checked={!!params.row.permission_update}
-              onClick={() => {
-                handleGivenPermission(params, "permission_update");
-              }}
-            />
+            {permissionModule?.update ? (
+              <Checkbox
+                checked={params.row.permission_update}
+                onClick={() => {
+                  handleGivenPermission(params, "permission_update");
+                }}
+              />
+            ) : null}
           </Box>
         );
       },
@@ -330,35 +382,41 @@ const Permission = () => {
       flex: 5,
       renderHeader: () => {
         return (
-          <Box>
-            <Checkbox
-              checked={
-                permissionDataRows.length > 0 &&
-                Boolean(globalPermission.permission_delete)
-              }
-              onClick={(e: any) =>
-                handleGivenPermissionAll(
-                  e.target.checked,
-                  "permission_delete",
-                  selectedRoleId
-                )
-              }
-            />
-            <label htmlFor="" className="font-bold">
-              Delete
-            </label>
-          </Box>
+          <>
+            {permissionModule?.delete ? (
+              <Box>
+                <Checkbox
+                  checked={
+                    permissionDataRows.length > 0 &&
+                    Boolean(globalPermission.permission_delete)
+                  }
+                  onClick={(e: any) =>
+                    handleGivenPermissionAll(
+                      e.target.checked,
+                      "permission_delete",
+                      selectedRoleId
+                    )
+                  }
+                />
+                <label htmlFor="" className="font-bold">
+                  Delete
+                </label>
+              </Box>
+            ) : null}
+          </>
         );
       },
       renderCell: (params) => {
         return (
           <Box>
-            <Checkbox
-              checked={!!params.row.permission_delete}
-              onClick={() => {
-                handleGivenPermission(params, "permission_delete");
-              }}
-            />
+            {permissionModule?.delete ? (
+              <Checkbox
+                checked={params.row.permission_delete}
+                onClick={() => {
+                  handleGivenPermission(params, "permission_delete");
+                }}
+              />
+            ) : null}
           </Box>
         );
       },

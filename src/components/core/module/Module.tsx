@@ -7,6 +7,7 @@ import {
   Container,
   IconButton,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { Controller, useForm, SubmitHandler } from "react-hook-form";
@@ -20,6 +21,7 @@ import {
   addModuleName,
   deleteModuleName,
   getModuleData,
+  getPermissionModule,
   updateModuleName,
 } from "../../../redux/slice/ModuleSlice";
 import { rootState, useAppDispatch } from "../../../redux/store";
@@ -37,6 +39,9 @@ import ConfirmModal, { ConfirmModalType } from "../../common/ConfirmModal";
 import SearchKeyword from "../../common/SearchKeyword";
 import AddIcon from "@mui/icons-material/Add";
 import ClearIcon from "@mui/icons-material/Clear";
+import { useBeforeUnload, useLocation, useNavigate } from "react-router-dom";
+import EditOffIcon from "@mui/icons-material/EditOff";
+import HideSourceIcon from "@mui/icons-material/HideSource";
 //Define Interface
 export interface ModuleNameType {
   id?: number;
@@ -63,7 +68,10 @@ const Module = () => {
   const [confirmModal, setConfirmModal] = useState<ConfirmModalType | null>(
     null
   );
+
+  const location = useLocation();
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
 
   // Use form hook
   const {
@@ -78,12 +86,20 @@ const Module = () => {
   const moduleData: ResponseModuleTypes[] = useSelector(
     (state: rootState) => state.module.data
   );
-  const { loading } = useSelector((state: rootState) => state.module);
+  const { loading, permissionModule } = useSelector(
+    (state: rootState) => state.module
+  );
 
   const handleSetModuleData = (data: ResponseModuleTypes[]) => {
     setModuleDataRows(data);
   };
 
+  // when read false
+  useEffect(() => {
+    if (permissionModule?.read === 0) {
+      navigate("/dashboard");
+    }
+  }, []);
   // Set data in setModuleDataRows
   useEffect(() => {
     if (moduleData.length > 0) {
@@ -93,8 +109,13 @@ const Module = () => {
 
   // Get Module Details
   useEffect(() => {
-    dispatch(getModuleData());
-  }, []);
+    if (location.pathname) {
+      dispatch(getPermissionModule(location.pathname.split("/")[1]));
+      dispatch(getModuleData());
+    } else {
+      navigate("/dashboard");
+    }
+  }, [location.pathname]);
 
   // Add And Update Module Name
   useEffect(() => {
@@ -111,6 +132,7 @@ const Module = () => {
       dispatch(deleteModuleName(deleteModuleId));
     }
   }, [deleteModuleId]);
+
   // Toggle Btn
   const HandleAddAndCancel = () => {
     setIsEdit(false);
@@ -209,14 +231,40 @@ const Module = () => {
         return (
           <Box>
             <IconButton
-              onClick={() => handleUpdate(params)}
+              onClick={() =>
+                permissionModule?.update === 1 && handleUpdate(params)
+              }
               sx={{ color: blue[900] }}
             >
-              <ModeEditOutlineIcon />
+              {permissionModule?.update === 1 ? (
+                <Tooltip title="Edit" placement="left">
+                  <ModeEditOutlineIcon />
+                </Tooltip>
+              ) : (
+                <Tooltip title="No Allowed" placement="left">
+                  <ModeEditOutlineIcon
+                    sx={{ cursor: "not-allowed", color: blue[200] }}
+                  />
+                </Tooltip>
+              )}
             </IconButton>
 
-            <IconButton onClick={() => handleDelete(params)}>
-              <GridDeleteIcon sx={{ color: red[900] }} />
+            <IconButton
+              onClick={() =>
+                permissionModule?.delete === 1 && handleDelete(params)
+              }
+            >
+              {permissionModule?.delete === 1 ? (
+                <Tooltip title="Delete" placement="right">
+                  <GridDeleteIcon sx={{ color: red[900] }} />
+                </Tooltip>
+              ) : (
+                <Tooltip title="No Allowed" placement="right">
+                  <GridDeleteIcon
+                    sx={{ color: red[200], cursor: "not-allowed" }}
+                  />
+                </Tooltip>
+              )}
             </IconButton>
           </Box>
         );
@@ -257,13 +305,27 @@ const Module = () => {
               // handleSearchText={handleSearchText}
             />
             {/* Add Button when you click open form  */}
-            <Button
-              startIcon={!expanded ? <AddIcon /> : <ClearIcon />}
-              onClick={HandleAddAndCancel}
-              variant="contained"
-            >
-              {!expanded ? "Add" : "Cancel"}
-            </Button>
+            {permissionModule?.write ? (
+              <Button
+                startIcon={!expanded ? <AddIcon /> : <ClearIcon />}
+                onClick={HandleAddAndCancel}
+                variant="contained"
+              >
+                {!expanded ? "Add" : "Cancel"}
+              </Button>
+            ) : (
+              <Button
+                sx={{
+                  cursor: "not-allowed",
+                  bgcolor: blue[100],
+                  "&:hover": { bgcolor: blue[100] },
+                }}
+                startIcon={!expanded ? <AddIcon /> : <ClearIcon />}
+                variant="contained"
+              >
+                {!expanded ? "Add" : "Cancel"}
+              </Button>
+            )}
           </Box>
         </Box>
         <Box sx={{ marginBottom: 2 }}>

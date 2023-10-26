@@ -16,11 +16,15 @@ import MuiDrawer from "@mui/material/Drawer";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import MenuIcon from "@mui/icons-material/Menu";
 import LogoutIcon from "@mui/icons-material/Logout";
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Navbarlinks, NavbarlinksProps } from "../data/NavbarLinks";
+import { rootState, useAppDispatch } from "../redux/store";
+import { getPermissionData } from "../redux/slice/PermissionSlice";
+import { useSelector } from "react-redux";
+import DashboardCustomizeIcon from "@mui/icons-material/DashboardCustomize";
 
 const drawerWidth = 240;
 
@@ -96,10 +100,37 @@ const Drawer = styled(MuiDrawer, {
 const Home = () => {
   const theme = useTheme();
   const [open, setOpen] = useState<boolean>(false);
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+
+  const { token } = useSelector((state: rootState) => state.auth);
   const handleDrawer = (x: boolean) => {
     setOpen(x);
   };
-  const navigate = useNavigate();
+
+  // get permission data
+  const { permissionData } = useSelector(
+    (state: rootState) => state.permission
+  );
+
+  const permissionAllow = (name: string) => {
+    const mName = name.split("/")[1];
+    let result = permissionData.filter((data) => {
+      if (data.tbl_module.name === mName) {
+        return data;
+      }
+    });
+    if (result) {
+      return result;
+    } else {
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    if (token !== null) dispatch(getPermissionData(null));
+  }, []);
+
   // Logout
   const HandleLogout = () => {
     localStorage.removeItem("token");
@@ -139,38 +170,73 @@ const Home = () => {
           </IconButton>
         </DrawerHeader>
         <Divider />
-
+        <ListItem disablePadding sx={{ display: "block" }}>
+          <ListItemButton
+            onClick={() => navigate("/dashboard")}
+            sx={{
+              minHeight: 48,
+              justifyContent: open ? "initial" : "center",
+              color: "grey",
+              px: 2.5,
+            }}
+          >
+            <ListItemIcon
+              sx={{
+                minWidth: 0,
+                mr: open ? 3 : "auto",
+                justifyContent: "center",
+              }}
+            >
+              <DashboardCustomizeIcon />
+            </ListItemIcon>
+            <ListItemText
+              primary={"Dashboard"}
+              sx={{ opacity: open ? 1 : 0 }}
+            />
+          </ListItemButton>
+        </ListItem>
         <List>
-          {Navbarlinks.map((link: NavbarlinksProps) => (
-            <ListItem key={link.id} disablePadding sx={{ display: "block" }}>
-              <Link
-                style={{ textDecoration: "none", color: "gray" }}
-                to={link.path}
-              >
-                <ListItemButton
-                  sx={{
-                    minHeight: 48,
-                    justifyContent: open ? "initial" : "center",
-                    px: 2.5,
-                  }}
+          {Navbarlinks.map((link: NavbarlinksProps) => {
+            let result = permissionAllow(link.path);
+            if (result && result[0]?.permission_read === 1) {
+              return (
+                <ListItem
+                  key={link.id}
+                  disablePadding
+                  sx={{ display: "block" }}
                 >
-                  <ListItemIcon
-                    sx={{
-                      minWidth: 0,
-                      mr: open ? 3 : "auto",
-                      justifyContent: "center",
-                    }}
+                  <Link
+                    style={{ textDecoration: "none", color: "gray" }}
+                    to={link.path}
                   >
-                    {link.icon}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={link.name}
-                    sx={{ opacity: open ? 1 : 0 }}
-                  />
-                </ListItemButton>
-              </Link>
-            </ListItem>
-          ))}
+                    <ListItemButton
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: open ? "initial" : "center",
+                        px: 2.5,
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : "auto",
+                          justifyContent: "center",
+                        }}
+                      >
+                        {link.icon}
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={link.name}
+                        sx={{ opacity: open ? 1 : 0 }}
+                      />
+                    </ListItemButton>
+                  </Link>
+                </ListItem>
+              );
+            } else {
+              return null;
+            }
+          })}
         </List>
         <Divider />
         <ListItem disablePadding sx={{ display: "block" }}>

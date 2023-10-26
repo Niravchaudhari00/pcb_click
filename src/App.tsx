@@ -28,7 +28,7 @@ function App() {
             <Route path="/module" element={<Module />} />
             <Route path="/role" element={<Role />} />
             <Route path="/permission" element={<Permission />} />
-            <Route path="/user-management" element={<UserManagement />} />
+            <Route path="/admin-user" element={<UserManagement />} />
           </Route>
         </Route>
       </Routes>

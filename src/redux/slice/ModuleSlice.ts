@@ -3,6 +3,7 @@ import { EndPoint } from "../../services/API";
 import axiosInstance from "../../services/AxiosInstance";
 import { ResponseModuleTypes } from "../../interface/moduleInterface";
 import { toast } from "react-toastify";
+import axios from "axios";
 
 // Post Method
 export const addModuleName = createAsyncThunk<any, any>(
@@ -46,14 +47,35 @@ export const deleteModuleName = createAsyncThunk<any, any>(
   }
 );
 
+// Get Permission Module
+
+export const getPermissionModule = createAsyncThunk<any, any>(
+  "module/permissionModule",
+  async (moduleName) => {
+    const response = await axiosInstance.get(
+      `${EndPoint.PERMISSION_ALLOW}/${moduleName}`
+    );
+    return response.data.data;
+  }
+);
+
+interface permissionModuleType {
+  read: number;
+  write: number;
+  update: number;
+  delete: number;
+}
+
 interface ResponseType {
   data: Array<ResponseModuleTypes>;
   loading: boolean;
+  permissionModule: permissionModuleType | null;
 }
 
 const initialState: ResponseType = {
   data: [],
   loading: false,
+  permissionModule: null,
 };
 
 // Slice
@@ -92,7 +114,6 @@ export const ModuleSlice = createSlice({
     });
     builder.addCase(updateModuleName.fulfilled, (state, action) => {
       state.loading = false;
-      // improve your logic when you click edit instant update value
       const index = state.data.findIndex(
         (data) => data.id === action.payload.data.id
       );
@@ -114,6 +135,19 @@ export const ModuleSlice = createSlice({
       }
     });
     builder.addCase(deleteModuleName.rejected, (state) => {
+      state.loading = false;
+    });
+
+    // get permission module
+    builder.addCase(getPermissionModule.pending, (state) => {
+      state.loading = true;
+    });
+    builder.addCase(getPermissionModule.fulfilled, (state, action) => {
+      state.loading = false;
+      state.permissionModule = action.payload;
+    });
+
+    builder.addCase(getPermissionModule.rejected, (state) => {
       state.loading = false;
     });
   },

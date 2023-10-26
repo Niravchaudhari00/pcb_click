@@ -5,11 +5,18 @@ import { ResponsePermissionType } from "../../interface/responseInterface";
 import { PermissionPayloadType } from "../../components/core/permission/Permission";
 
 // Get Permission data
-export const getPermissionData = createAsyncThunk<any, number>(
+export const getPermissionData = createAsyncThunk<any, any>(
   "permission/getPermission",
   async (id) => {
-    const response = await axiosInstance.get(`${EndPoint.PERMISSION}/${id}`);
-    return response.data;
+    let result;
+    if (id) {
+      const response = await axiosInstance.get(`${EndPoint.PERMISSION}/${id}`);
+      result = response.data;
+    } else {
+      const response = await axiosInstance.get(`${EndPoint.PERMISSION}`);
+      result = response.data;
+    }
+    return result;
   }
 );
 

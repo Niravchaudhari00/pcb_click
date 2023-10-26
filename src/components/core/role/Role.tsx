@@ -10,6 +10,7 @@ import {
   FormGroup,
   IconButton,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
@@ -34,6 +35,10 @@ import NotifyError from "../../common/NotifyError";
 import { yupResolver } from "@hookform/resolvers/yup";
 import ConfirmModal, { ConfirmModalType } from "../../common/ConfirmModal";
 import SearchKeyword from "../../common/SearchKeyword";
+import { useLocation, useNavigate } from "react-router-dom";
+import { getPermissionModule } from "../../../redux/slice/ModuleSlice";
+import AddIcon from "@mui/icons-material/Add";
+import ClearIcon from "@mui/icons-material/Clear";
 
 interface RoleType {
   id?: number;
@@ -66,13 +71,25 @@ const Role = () => {
     control,
     setValue,
   } = useForm<RoleType>({ resolver: yupResolver(schema) });
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const { roleData, loading } = useSelector((state: rootState) => state.role);
+  const { permissionModule } = useSelector((state: rootState) => state.module);
 
+  // when permission read not allow
+  useEffect(() => {
+    if (permissionModule?.read === 0) {
+      navigate("/dashboard");
+    }
+  }, []);
   // Get Role
   useEffect(() => {
-    dispatch(getRoleData());
-  }, []);
+    if (location.pathname) {
+      dispatch(getPermissionModule(location.pathname.split("/")[1]));
+      dispatch(getRoleData());
+    }
+  }, [location.pathname]);
 
   const handleSetRoleData = (data: ResponseRoleType[]) => {
     setRoleDataRows(data);
@@ -97,8 +114,8 @@ const Role = () => {
     }
   }, [roleUpdateValue]);
 
-  const HandleAddAndCancel = (x: boolean) => {
-    setExpanded(x);
+  const HandleAddAndCancel = () => {
+    setExpanded((prev) => !prev);
     setIsEdit(false);
     reset();
   };
@@ -188,16 +205,24 @@ const Role = () => {
       renderCell: (params) => {
         return (
           <Box>
-            <IconButton
-              onClick={() => handleUpdate(params)}
-              sx={{ color: blue[900] }}
-            >
-              <ModeEditOutlineIcon />
-            </IconButton>
+            {permissionModule?.update ? (
+              <IconButton
+                onClick={() => handleUpdate(params)}
+                sx={{ color: blue[900] }}
+              >
+                <Tooltip title="Update" placement="left">
+                  <ModeEditOutlineIcon />
+                </Tooltip>
+              </IconButton>
+            ) : null}
 
-            <IconButton onClick={() => handleDelete(params)}>
-              <GridDeleteIcon sx={{ color: red[900] }} />
-            </IconButton>
+            {permissionModule?.delete ? (
+              <IconButton onClick={() => handleDelete(params)}>
+                <Tooltip title="Delete" placement="right">
+                  <GridDeleteIcon sx={{ color: red[900] }} />
+                </Tooltip>
+              </IconButton>
+            ) : null}
           </Box>
         );
       },
@@ -235,12 +260,15 @@ const Role = () => {
               handleSetModuleData={handleSetRoleData}
             />
             {/* Add Button when you click open form  */}
-            <Button
-              onClick={() => HandleAddAndCancel(true)}
-              variant="contained"
-            >
-              Add
-            </Button>
+            {permissionModule?.write ? (
+              <Button
+                startIcon={!expanded ? <AddIcon /> : <ClearIcon />}
+                onClick={HandleAddAndCancel}
+                variant="contained"
+              >
+                {!expanded ? "Add" : "Cancel"}
+              </Button>
+            ) : null}
           </Box>
         </Box>
 
@@ -316,10 +344,7 @@ const Role = () => {
                   <Typography>Same Level Edit</Typography>
                 </div>
                 <div className="flex justify-center gap-2">
-                  <Button
-                    onClick={() => HandleAddAndCancel(false)}
-                    variant="outlined"
-                  >
+                  <Button onClick={HandleAddAndCancel} variant="outlined">
                     Cancel
                   </Button>
                   <Button type="submit" variant="contained">

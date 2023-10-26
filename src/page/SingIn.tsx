@@ -21,15 +21,11 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import NotifyError from "../components/common/NotifyError";
 import { useEffect, useState } from "react";
-import {
-  SettingsOutlined,
-  Visibility,
-  VisibilityOff,
-} from "@mui/icons-material";
-import { useDispatch, useSelector } from "react-redux";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { useSelector } from "react-redux";
 import { rootState, useAppDispatch } from "../redux/store";
 import { getAuth } from "../redux/slice/AuthSlice";
-import useToken from "../utils/features/setTokenInCookie";
+
 import LoadingBar from "../components/common/LoadingBar";
 
 interface UserInformation {
