@@ -1,3 +1,4 @@
+import { yupResolver } from "@hookform/resolvers/yup";
 import {
   Accordion,
   AccordionDetails,
@@ -10,13 +11,24 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { Controller, useForm, SubmitHandler } from "react-hook-form";
-import NotifyError from "../../common/NotifyError";
 import { useEffect, useState } from "react";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import * as yup from "yup";
-import { yupResolver } from "@hookform/resolvers/yup";
+import NotifyError from "../../common/NotifyError";
 // import { useDispatch } from "react-redux";
 
+import AddIcon from "@mui/icons-material/Add";
+import ClearIcon from "@mui/icons-material/Clear";
+import ModeEditOutlineIcon from "@mui/icons-material/ModeEditOutline";
+import { blue, red } from "@mui/material/colors";
+import {
+  GridColDef,
+  GridDeleteIcon,
+  GridRenderCellParams,
+} from "@mui/x-data-grid";
+import { useSelector } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
+import { ResponseModuleTypes } from "../../../interface/moduleInterface";
 import {
   addModuleName,
   deleteModuleName,
@@ -25,23 +37,16 @@ import {
   updateModuleName,
 } from "../../../redux/slice/ModuleSlice";
 import { rootState, useAppDispatch } from "../../../redux/store";
-import {
-  GridColDef,
-  GridDeleteIcon,
-  GridRenderCellParams,
-} from "@mui/x-data-grid";
-import ModeEditOutlineIcon from "@mui/icons-material/ModeEditOutline";
-import Table from "../../common/Table";
-import { blue, red } from "@mui/material/colors";
-import { useSelector } from "react-redux";
-import { ResponseModuleTypes } from "../../../interface/moduleInterface";
 import ConfirmModal, { ConfirmModalType } from "../../common/ConfirmModal";
 import SearchKeyword from "../../common/SearchKeyword";
-import AddIcon from "@mui/icons-material/Add";
-import ClearIcon from "@mui/icons-material/Clear";
-import { useBeforeUnload, useLocation, useNavigate } from "react-router-dom";
-import EditOffIcon from "@mui/icons-material/EditOff";
-import HideSourceIcon from "@mui/icons-material/HideSource";
+import Table from "../../common/Table";
+
+// pagination interface
+export interface PaginationModel {
+  page: number;
+  pageSize: number;
+}
+
 //Define Interface
 export interface ModuleNameType {
   id?: number;
@@ -68,6 +73,11 @@ const Module = () => {
   const [confirmModal, setConfirmModal] = useState<ConfirmModalType | null>(
     null
   );
+
+  const [page, setPage] = useState<PaginationModel>({
+    page: 0,
+    pageSize: 10,
+  });
 
   const location = useLocation();
   const dispatch = useAppDispatch();
@@ -101,6 +111,7 @@ const Module = () => {
     }
   }, []);
   // Set data in setModuleDataRows
+  console.log("moduleData.length: ", moduleData.length);
   useEffect(() => {
     if (moduleData.length > 0) {
       handleSetModuleData(moduleData);
@@ -168,6 +179,17 @@ const Module = () => {
     reset();
   };
 
+  // pagination
+  const handlePageChange = (pageData: PaginationModel) => {
+    setPage({
+      page: pageData.page,
+      pageSize: pageData.pageSize,
+    });
+  };
+
+  useEffect(() => {
+    handlePageChange({ page: 3, pageSize: 10 });
+  }, []);
   // ++++++++++++++++++++ Operations +++++++++++++++++++++++//
 
   // Edit Mode

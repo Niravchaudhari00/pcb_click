@@ -6,4 +6,5 @@ export const EndPoint = {
   ROLE: `/admin/role`,
   PERMISSION: `/admin/permission`,
   PERMISSION_ALLOW: `admin//permission/module`,
+  USER: `admin/admin-user`,
 };

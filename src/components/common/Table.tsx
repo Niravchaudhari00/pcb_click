@@ -1,9 +1,21 @@
 import { Box, Skeleton } from "@mui/material";
-import { DataGrid, GridColDef, GridOverlay } from "@mui/x-data-grid";
+import {
+  DataGrid,
+  GridColDef,
+  GridOverlay,
+  GridSortModel,
+} from "@mui/x-data-grid";
+import { PaginationModel } from "../core/module/Module";
+import { useState } from "react";
 interface propsType {
   columns: GridColDef[];
   rows: any;
   loading?: boolean;
+  page?: PaginationModel;
+  sortModel?: GridSortModel | undefined;
+  handlePaginationModel: any;
+  handleSortModelChange: any;
+  rowCount?: number;
 }
 
 const NoDataFound = () => {
@@ -15,8 +27,24 @@ const NoDataFound = () => {
     </GridOverlay>
   );
 };
-const Table = (props: propsType) => {
-  const { columns, rows, loading } = props;
+const Table = (props: any) => {
+  const {
+    columns,
+    rows,
+    loading,
+    page,
+
+    rowCount,
+    handlePaginationModel = () => {},
+    handleSortModelChange = () => {},
+  } = props;
+
+  const [sortModel, setSortModel] = useState<GridSortModel>();
+  const handlChangeSortModel = (model: GridSortModel) => {
+    console.log("model: ", model);
+    setSortModel(model);
+    handleSortModelChange(model);
+  };
   return (
     <div className="w-[500px] md:w-[768px] lg:w-full">
       {loading ? (
@@ -33,6 +61,7 @@ const Table = (props: propsType) => {
             paddingX: 1,
             border: "none",
           }}
+          rowCount={rowCount}
           rows={rows}
           columns={columns}
           autoHeight
@@ -47,6 +76,14 @@ const Table = (props: propsType) => {
           slots={{
             noRowsOverlay: NoDataFound,
           }}
+          paginationModel={page}
+          onPaginationModelChange={(newPage) =>
+            handlePaginationModel && handlePaginationModel(newPage)
+          }
+          sortModel={sortModel}
+          onSortModelChange={(newSortModel) =>
+            handlChangeSortModel(newSortModel)
+          }
         />
       )}
     </div>
