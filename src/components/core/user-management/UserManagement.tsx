@@ -74,8 +74,8 @@ const UserManagement = () => {
       searchText: searchText,
       pageIndex: paginationModel ? paginationModel.page : "",
       pageSize: paginationModel ? paginationModel.pageSize : "",
-      sortColumn: sortModel ? sortModel[0].field : "",
-      sortDirection: sortModel ? sortModel[0].sort : "",
+      sortColumn: sortModel ? sortModel[0]?.field : "",
+      sortDirection: sortModel ? sortModel[0]?.sort : "",
     };
 
     let query = "?";
@@ -124,9 +124,10 @@ const UserManagement = () => {
       headerName: "Role",
       disableColumnMenu: true,
       flex: 1,
-      valueGetter: (params) => {
-        return params.row.tbl_role.name;
-      },
+      sortable: false,
+      // valueGetter: (params) => {
+      //   return params.row.tbl_role.name;
+      // },
 
       renderCell: (params) => {
         return <>{params.row.tbl_role.name}</>;
@@ -136,6 +137,7 @@ const UserManagement = () => {
       field: "status",
       headerName: "Status",
       disableColumnMenu: true,
+      sortable: false,
       flex: 1,
     },
 

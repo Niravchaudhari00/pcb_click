@@ -272,11 +272,9 @@ const Module = () => {
             </IconButton>
 
             <IconButton
-              onClick={() =>
-                permissionModule?.delete === 1 && handleDelete(params)
-              }
+              onClick={() => permissionModule?.delete && handleDelete(params)}
             >
-              {permissionModule?.delete === 1 ? (
+              {permissionModule?.delete ? (
                 <Tooltip title="Delete" placement="right">
                   <GridDeleteIcon sx={{ color: red[900] }} />
                 </Tooltip>
